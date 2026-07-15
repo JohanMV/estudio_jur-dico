@@ -1,4 +1,7 @@
-export { AboutSection } from './AboutSection'
 export { Hero } from './Hero'
+export { AboutSection } from './AboutSection'
 export { PracticeAreasSection } from './PracticeAreasSection'
 export { TeamSection } from './TeamSection'
+export { TrustSection } from './TrustSection'
+export { TestimonialsSection } from './TestimonialsSection'
+export { ContactSection } from './ContactSection'

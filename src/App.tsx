@@ -9,6 +9,7 @@ const sectionByPath: Record<string, string> = {
   '/nosotros': 'nosotros',
   '/servicios': 'areas-practica',
   '/areas-practica': 'areas-practica',
+  '/testimonios': 'testimonios',
   '/equipo': 'equipo',
   '/contacto': 'contacto',
 }

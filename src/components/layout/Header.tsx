@@ -1,27 +1,41 @@
-import { Menu, X } from 'lucide-react'
-import { useState } from 'react'
+import { Menu, Scale, X } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
 const links = [
-  { label: 'Inicio', href: '/' },
-  { label: 'Nosotros', href: '/nosotros' },
-  { label: 'Servicios', href: '/servicios' },
-  { label: 'Áreas de práctica', href: '/areas-practica' },
-  { label: 'Contacto', href: '/contacto' },
+  { label: 'Inicio', href: '/', sectionId: 'inicio' },
+  { label: 'Nosotros', href: '/nosotros', sectionId: 'nosotros' },
+  { label: 'Áreas de práctica', href: '/areas-practica', sectionId: 'areas-practica' },
+  { label: 'Testimonios', href: '/testimonios', sectionId: 'testimonios' },
+  { label: 'Equipo', href: '/equipo', sectionId: 'equipo' },
+  { label: 'Contacto', href: '/contacto', sectionId: 'contacto' },
 ]
 
 const sectionByPath: Record<string, string> = {
   '/': 'inicio',
   '/nosotros': 'nosotros',
-  '/servicios': 'areas-practica',
   '/areas-practica': 'areas-practica',
+  '/testimonios': 'testimonios',
+  '/equipo': 'equipo',
   '/contacto': 'contacto',
 }
 
-function navigateToSection(href: string) {
+function navigateToSection(href: string, moveFocus = false) {
   const section = document.getElementById(sectionByPath[href] ?? '')
   if (!section) return
   window.history.pushState({}, '', href)
   section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+  if (!moveFocus) return
+  const labelledBy = section.getAttribute('aria-labelledby')
+  const focusTarget = (labelledBy ? document.getElementById(labelledBy) : null) ?? section
+  if (!focusTarget) return
+  const previousTabIndex = focusTarget.getAttribute('tabindex')
+  focusTarget.setAttribute('tabindex', '-1')
+  focusTarget.focus({ preventScroll: true })
+  focusTarget.addEventListener('blur', () => {
+    if (previousTabIndex === null) focusTarget.removeAttribute('tabindex')
+    else focusTarget.setAttribute('tabindex', previousTabIndex)
+  }, { once: true })
 }
 
 function BrandCrest() {
@@ -35,19 +49,71 @@ function BrandCrest() {
 
 export function Header() {
   const [open, setOpen] = useState(false)
+  const [activeSection, setActiveSection] = useState('inicio')
+  const headerRef = useRef<HTMLElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const sections = links
+      .map(({ sectionId }) => document.getElementById(sectionId))
+      .filter((section): section is HTMLElement => section !== null)
+    const observer = new IntersectionObserver((entries) => {
+      const visibleSection = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0]
+      if (visibleSection) setActiveSection(visibleSection.target.id)
+    }, { rootMargin: '-18% 0px -68% 0px', threshold: 0 })
+
+    sections.forEach((section) => observer.observe(section))
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return
+      setOpen(false)
+      menuButtonRef.current?.focus()
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!headerRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [open])
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 1024px)')
+    function handleViewportChange(event: MediaQueryListEvent) {
+      if (event.matches) setOpen(false)
+    }
+
+    desktopQuery.addEventListener('change', handleViewportChange)
+    return () => desktopQuery.removeEventListener('change', handleViewportChange)
+  }, [])
 
   return (
-    <header className="absolute inset-x-0 top-0 z-30 mx-auto flex w-[min(calc(100%-2rem),1430px)] items-center justify-between pt-6 md:w-[min(calc(100%-6vw),1430px)] md:pt-7 xl:pt-8">
-      <a className="inline-flex items-center gap-3 text-ink no-underline" href="/" onClick={(event) => { event.preventDefault(); navigateToSection('/'); setOpen(false) }} aria-label="Lex Iusta, ir al inicio">
-        <span className="grid h-[4.25rem] w-[3.75rem] place-items-center text-gold md:h-20 md:w-[4.45rem]"><BrandCrest /></span>
+    <header ref={headerRef} className="absolute inset-x-0 top-0 z-30 mx-auto flex w-[min(calc(100%-2rem),1430px)] items-center justify-between pt-5 md:w-[min(calc(100%-6vw),1430px)] md:pt-5 xl:pt-5">
+      <a className="inline-flex items-center gap-3 text-ink no-underline focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold" href="/" onClick={(event) => { event.preventDefault(); setActiveSection('inicio'); navigateToSection('/', open); setOpen(false) }} aria-label="Lex Iusta, ir al inicio">
+        <span className="grid h-[4.25rem] w-[3.75rem] place-items-center text-gold md:h-[4.5rem] md:w-16"><BrandCrest /></span>
         <span className="grid gap-1">
-          <strong className="font-display text-[clamp(1.8rem,3vw,3rem)] leading-[.78] font-bold tracking-[-.045em]">LEX IUSTA</strong>
-          <small className="font-display text-[clamp(.56rem,1vw,.95rem)] leading-none font-bold tracking-[.22em] text-gold">ESTUDIO JURÍDICO</small>
+          <strong className="font-display text-[clamp(1.7rem,2.7vw,2.7rem)] leading-[.78] font-bold tracking-[-.045em]">LEX IUSTA</strong>
+          <small className="font-display text-[clamp(.54rem,.9vw,.84rem)] leading-none font-bold tracking-[.22em] text-gold">ESTUDIO JURÍDICO</small>
         </span>
       </a>
-      <button className="grid rounded-md p-1.5 text-ink md:hidden" type="button" aria-label={open ? 'Cerrar navegación' : 'Abrir navegación'} aria-expanded={open} aria-controls="main-navigation" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
-      <nav id="main-navigation" className={(open ? 'grid ' : 'hidden ') + 'absolute inset-x-0 top-[calc(100%+.75rem)] gap-1 rounded-lg border border-gold/35 bg-paper/98 p-2 shadow-xl md:static md:flex md:items-center md:gap-[clamp(1.25rem,3vw,4rem)] md:border-0 md:bg-transparent md:p-0 md:shadow-none'} aria-label="Navegación principal">
-        {links.map((link) => <a className="relative px-3 py-2 text-[.78rem] font-semibold uppercase text-ink no-underline after:absolute after:inset-x-3 after:bottom-1 after:h-px after:origin-right after:scale-x-0 after:bg-gold after:transition-transform hover:after:origin-left hover:after:scale-x-100 md:px-0 md:py-1 md:text-[clamp(.72rem,.85vw,.92rem)]" key={link.label} href={link.href} onClick={(event) => { event.preventDefault(); navigateToSection(link.href); setOpen(false) }}>{link.label}</a>)}
+      <button ref={menuButtonRef} className="grid h-11 w-11 shrink-0 place-items-center rounded-md text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold lg:hidden" type="button" aria-label={open ? 'Cerrar navegación' : 'Abrir navegación'} aria-expanded={open} aria-controls="main-navigation" onClick={() => setOpen((current) => !current)}>{open ? <X /> : <Menu />}</button>
+      <nav id="main-navigation" className={(open ? 'grid ' : 'hidden ') + 'absolute inset-x-0 top-[calc(100%+.75rem)] gap-1 rounded-lg border border-gold/35 bg-paper/98 p-2 shadow-xl lg:static lg:flex lg:w-auto lg:items-center lg:gap-1 lg:rounded-full lg:border lg:border-ink/75 lg:bg-paper/80 lg:p-1.5 lg:shadow-[0_4px_18px_rgba(19,40,74,.08)]'} aria-label="Navegación principal">
+        {links.map((link) => {
+          const active = activeSection === link.sectionId
+          return <a aria-current={active ? 'page' : undefined} className={(active ? 'bg-paper text-gold shadow-[inset_0_0_0_1px_rgba(172,123,62,.25)] after:scale-x-100 ' : 'text-ink hover:bg-cream/75 after:scale-x-0 ') + 'relative flex min-h-11 items-center rounded-full px-4 py-2.5 text-[.78rem] font-semibold no-underline after:absolute after:inset-x-3 after:bottom-1 after:h-px after:origin-right after:bg-gold after:transition-transform hover:after:origin-left hover:after:scale-x-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-gold lg:min-h-11 lg:px-3 lg:text-[clamp(.68rem,.78vw,.86rem)] xl:px-4 2xl:px-5'} key={link.label} href={link.href} onClick={(event) => { event.preventDefault(); setActiveSection(link.sectionId); navigateToSection(link.href, open); setOpen(false) }}>{link.label}</a>
+        })}<span className="ml-1 hidden h-11 w-11 place-items-center rounded-full bg-gold text-paper lg:grid"><Scale className="h-5 w-5 stroke-[1.7]" aria-hidden="true" /></span>
       </nav>
     </header>
   )

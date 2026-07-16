@@ -1,4 +1,4 @@
-import { ArrowRight, Clock3, FileText, LockKeyhole, Mail, MapPin, MessageSquare, Phone, Send, UserRound } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Clock3, FileText, LockKeyhole, Mail, MapPin, MessageSquare, Phone, Scale, Send, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 
@@ -28,7 +28,8 @@ export function ContactSection() {
   }
 
   return (
-    <section id="contacto" className="bg-cream py-16 md:py-[clamp(5rem,9svh,8rem)]" aria-labelledby="contact-title">
+    <>
+    <section id="contacto" className="bg-cream pt-16 pb-16 md:pt-[clamp(5rem,9svh,8rem)] md:pb-[clamp(4rem,7svh,6rem)]" aria-labelledby="contact-title">
       <div className="mx-auto w-full px-6 md:w-[min(calc(100%-6vw),1430px)] md:px-0">
         <header className="mx-auto mb-10 max-w-3xl text-center md:mb-[clamp(3rem,6svh,5.25rem)]">
           <h2 id="contact-title" className="font-display text-[clamp(3.8rem,6.3vw,6.6rem)] leading-[.78] font-semibold tracking-[-.065em] text-ink">Contacto</h2>
@@ -61,8 +62,9 @@ export function ContactSection() {
           </div>
         </div>
       </div>
-      <footer className="mt-16 border-t border-gold/25 bg-ink py-6 text-paper md:mt-[clamp(4rem,8svh,7rem)]"><div className="mx-auto flex w-full flex-col gap-2 px-6 text-center text-[.68rem] font-medium tracking-[.1em] uppercase md:w-[min(calc(100%-6vw),1430px)] md:flex-row md:justify-between md:px-0"><span>Lex Iusta · Estudio Jurídico</span><span className="text-paper/70">Defensa legal con criterio y compromiso.</span></div></footer>
-    </section>
+      </section>
+      <SiteFooter />
+    </>
   )
 }
 
@@ -70,4 +72,24 @@ type FieldProps = { label: string; icon: typeof UserRound; children: ReactNode }
 
 function Field({ label, icon: Icon, children }: FieldProps) {
   return <label className="grid gap-2 text-sm font-bold text-ink"><span>{label}</span><span className="flex min-h-16 items-center gap-3 rounded-lg border border-gold/55 bg-paper px-4 text-ink transition focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/15 [&_input]:min-w-0 [&_input]:flex-1 [&_input]:bg-transparent [&_input]:text-sm [&_input]:font-normal [&_input]:text-ink [&_input]:outline-none [&_input::placeholder]:text-ink/55 [&_textarea]:min-h-36 [&_textarea]:w-full [&_textarea]:resize-y [&_textarea]:bg-transparent [&_textarea]:pt-4 [&_textarea]:text-sm [&_textarea]:font-normal [&_textarea]:text-ink [&_textarea]:outline-none [&_textarea::placeholder]:text-ink/55"><Icon className="h-5 w-5 shrink-0 stroke-[1.75] text-gold" aria-hidden="true" />{children}</span></label>
+}
+function SiteFooter() {
+  const navigation = ['Inicio', 'Nosotros', 'Servicios', 'Áreas de práctica', 'Contacto']
+  const practiceAreas = ['Derecho corporativo', 'Litigios y arbitraje', 'Derecho laboral', 'Derecho inmobiliario']
+
+  return <footer className="bg-ink text-paper">
+    <div className="mx-auto w-full px-6 py-14 md:w-[min(calc(100%-6vw),1430px)] md:px-0 md:py-16">
+      <div className="grid gap-12 lg:grid-cols-[1.3fr_.75fr_1fr_1fr] lg:gap-10">
+        <div>
+          <a className="inline-flex items-center gap-3 text-paper no-underline" href="#inicio" aria-label="Lex Iusta, ir al inicio"><span className="grid h-12 w-12 place-items-center rounded-full border border-gold/65 text-gold"><Scale className="h-6 w-6 stroke-[1.5]" aria-hidden="true" /></span><span><strong className="block font-display text-3xl leading-none font-semibold tracking-[-.045em]">LEX IUSTA</strong><small className="mt-1 block text-[.6rem] font-bold tracking-[.22em] text-gold">ESTUDIO JURÍDICO</small></span></a>
+          <p className="mt-6 max-w-xs text-sm leading-relaxed text-paper/70">Asesoría legal estratégica para proteger tus intereses con rigor, cercanía y absoluta confidencialidad.</p>
+          <a className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-gold no-underline transition hover:text-paper" href="mailto:contacto@lexiusta.pe">Solicita una asesoría <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></a>
+        </div>
+        <nav aria-label="Navegación del pie de página"><h2 className="text-xs font-bold tracking-[.14em] uppercase text-gold">Navegación</h2><ul className="mt-5 grid gap-3 p-0 text-sm text-paper/75 [list-style:none]">{navigation.map((item) => <li key={item}><a className="transition hover:text-gold" href={item === 'Inicio' ? '#inicio' : `#${item.toLowerCase().replaceAll(' ', '-')}`}>{item}</a></li>)}</ul></nav>
+        <div><h2 className="text-xs font-bold tracking-[.14em] uppercase text-gold">Áreas de práctica</h2><ul className="mt-5 grid gap-3 p-0 text-sm text-paper/75 [list-style:none]">{practiceAreas.map((area) => <li key={area}>{area}</li>)}</ul></div>
+        <address className="not-italic"><h2 className="text-xs font-bold tracking-[.14em] uppercase text-gold">Contacto</h2><div className="mt-5 grid gap-4 text-sm leading-relaxed text-paper/75"><a className="transition hover:text-gold" href="tel:+5116423178">+51 1 642 3178</a><a className="transition hover:text-gold" href="mailto:contacto@lexiusta.pe">contacto@lexiusta.pe</a><p>Av. Javier Prado Este 560, Of. 804<br />San Isidro, Lima 15046</p><p className="text-paper/55">Lunes a viernes<br />9:00 a. m. – 6:00 p. m.</p></div></address>
+      </div>
+    </div>
+    <div className="border-t border-paper/15"><div className="mx-auto flex w-full flex-col items-center justify-between gap-4 px-6 py-5 text-center text-xs text-paper/60 md:w-[min(calc(100%-6vw),1430px)] md:flex-row md:px-0 md:text-left"><span>© 2026 Lex Iusta Estudio Jurídico. Todos los derechos reservados.</span><nav className="flex flex-wrap justify-center gap-x-5 gap-y-2" aria-label="Enlaces legales"><a className="transition hover:text-gold" href="#aviso-privacidad">Aviso de privacidad</a><a className="transition hover:text-gold" href="#terminos-condiciones">Términos y condiciones</a></nav></div></div>
+  </footer>
 }
